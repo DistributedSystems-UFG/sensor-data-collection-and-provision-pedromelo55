@@ -13,20 +13,19 @@ import com.hivemq.client.mqtt.mqtt5.Mqtt5Client;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
-public class LightSensorAccess implements SensorEventListener {
+public class TemperatureSensorAccess implements SensorEventListener {
 
     private SensorManager sensorManager;
-    private Sensor mLight;
-    private TextView sensorField;
+    private Sensor mTemperature;
+    private TextView textViewTemperature;
 
     // Adicione variáveis relacionadas ao MQTT
     private Mqtt5BlockingClient mqttClient;
     private String mqttBrokerURI = "34.234.31.226"; // Substitua pelo URI do seu broker
 
-    public LightSensorAccess(SensorManager sm, TextView tv) {
+    public TemperatureSensorAccess(SensorManager sm, TextView tv) {
         sensorManager = sm;
-        sensorField = tv;
-        mLight = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
+        textViewTemperature = tv;
 
         // Configurar o cliente MQTT (ajuste conforme necessário)
         mqttClient = Mqtt5Client.builder()
@@ -34,26 +33,30 @@ public class LightSensorAccess implements SensorEventListener {
                 .serverHost(mqttBrokerURI)
                 .buildBlocking();
 
-        // Registrar ouvinte do sensor de luminosidade
-        if (mLight != null) {
-            sensorManager.registerListener(this, mLight, SensorManager.SENSOR_DELAY_NORMAL);
+        // Obter o sensor de temperatura
+        mTemperature = sensorManager.getDefaultSensor(Sensor.TYPE_AMBIENT_TEMPERATURE);
+
+        // Registrar ouvinte do sensor de temperatura
+        if (mTemperature != null) {
+            sensorManager.registerListener(this, mTemperature, SensorManager.SENSOR_DELAY_NORMAL);
         } else {
-            // Trate o caso em que o sensor de luminosidade não está disponível no dispositivo.
+            // Trate o caso em que o sensor de temperatura não está disponível no dispositivo.
+            textViewTemperature.setText("Temperature sensor not available on this device");
         }
     }
 
     @Override
-    public final void onAccuracyChanged(Sensor sensor, int accuracy) {
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
         // Não é necessário neste exemplo
     }
 
     @Override
-    public final void onSensorChanged(SensorEvent event) {
+    public void onSensorChanged(SensorEvent event) {
         // Atualizar o campo de texto com o valor do sensor
-        float lux = event.values[0];
-        sensorField.setText(String.valueOf(lux));
+        float temperatureValue = event.values[0];
+        textViewTemperature.setText(temperatureValue + " °C");
 
-        publishToMQTT("sensor_luz", String.valueOf(lux));
+        publishToMQTT("sensor_temperatura", String.valueOf(temperatureValue));
     }
 
     private void publishToMQTT(String topic, String message) {

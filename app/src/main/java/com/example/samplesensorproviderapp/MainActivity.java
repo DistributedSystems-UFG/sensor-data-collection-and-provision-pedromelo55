@@ -18,7 +18,7 @@ import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
     public static final String EXTRA_MESSAGE = "com.example.basicandroidmqttclient.MESSAGE";
-    public static final String brokerURI = "3.223.10.115";
+    public static final String brokerURI = "34.234.31.226";
 
     Activity thisActivity;
     TextView subMsgTextView;
